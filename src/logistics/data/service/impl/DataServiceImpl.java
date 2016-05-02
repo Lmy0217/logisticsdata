@@ -1,5 +1,7 @@
 package logistics.data.service.impl;
 
+import java.util.List;
+
 import logistics.data.bean.Data;
 import logistics.data.dao.DataDAO;
 import logistics.data.service.DataService;
@@ -19,9 +21,8 @@ public class DataServiceImpl implements DataService {
 	}
 
 	@Override
-	public Data get(int lower, String startTime, String endTime) {
-		// TODO 自动生成的方法存根
-		return null;
+	public List<Data> get(int lower, String startTime, String endTime) {
+		return dataDAO.get(lower, startTime, endTime);
 	}
 
 }
