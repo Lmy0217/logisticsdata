@@ -132,14 +132,18 @@ html,body {
 			var p1 = json.point.split("|")[1];
 			var point = new BMap.Point(p0, p1);
 			var iconImg = createIcon(json.icon);
+			
 			var marker = new BMap.Marker(point, {
 				icon : iconImg
 			});
+			
 			var iw = createInfoWindow(i);
+			
 			var label = new BMap.Label(json.title, {
 				"offset" : new BMap.Size(json.icon.lb - json.icon.x + 10, -20)
 			});
 			marker.setLabel(label);
+			
 			map.addOverlay(marker);
 			label.setStyle({
 				borderColor : "#808080",

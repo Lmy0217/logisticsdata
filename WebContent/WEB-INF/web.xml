@@ -9,4 +9,18 @@
     <welcome-file>default.htm</welcome-file>
     <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
+  
+  <listener>
+      <listener-class>logistics.data.filter.ServletContext</listener-class>
+  </listener>
+  
+  <servlet>
+      <servlet-name>GetPost</servlet-name>
+      <servlet-class>logistics.data.servlet.GetPost</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>GetPost</servlet-name>
+      <url-pattern>/get</url-pattern>
+  </servlet-mapping>
+  
 </web-app>

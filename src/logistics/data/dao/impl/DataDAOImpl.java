@@ -57,7 +57,7 @@ public class DataDAOImpl implements DataDAO {
 		StringBuilder SQL = new StringBuilder();
 		SQL.append("select * from data where"
 				+ (lower != -1 ? " lower = " + lower + " and" : "")
-				+ ((startTime != null && endTime != null) ? " time >= \'" + startTime + "\' and time <= \'" + endTime + "\' and" : ""));
+				+ ((startTime != null && endTime != null) ? " time > \'" + startTime + "\' and time <= \'" + endTime + "\' and" : ""));
 		SQL.delete(SQL.length() - 4, SQL.length());
 		
 		PreparedStatement pstmt = null;
