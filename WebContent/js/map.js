@@ -18,6 +18,18 @@ var endTime = "0000-00-00 00:00:01";
 
 console.log("init end");
 
+var info = -1;
+
+function lower(id) {
+	this.id = id;
+	this.data = [];
+	this.preMarker = null;
+	this.add = (function(aData) {
+		this.data = (this.data).concat(aData);
+	});
+}
+
+//----------------------------------------------
 var requestMgr = {
 	request: function (startTime, endTime, successCbk) {
 		console.log("request");
@@ -32,8 +44,10 @@ var requestMgr = {
 				console.log("out" + xhr.responseText + "end");
 				var data = JSON.parse(xhr.responseText);
 				//rs = rs.concat(JSON.parse(xhr.responseText));
+				
+				//rs = rs.concat(data);
+				addData(data);
 				addMarkers(data);
-				rs = rs.concat(data);
 				
 				if (successCbk) {
 					successCbk();
@@ -79,6 +93,7 @@ function startCbk(cbk) {
 startCbk(nowTimeCbk);
 
 
+//---------------------------------------------
 	var opts = {
 		width : 250,     // 信息窗口宽度
 		height: 100,     // 信息窗口高度
@@ -88,10 +103,27 @@ startCbk(nowTimeCbk);
 
 function addMarkers(data) {
 	for ( var i = 0; i < data.length; i++ ) {
-		var marker = new BMap.Marker(new BMap.Point(data[i][1],data[i][2]));
-		var content = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "<br/>震动强度：" + data[i][4] + "<br/>时间：" + data[i][5] + "</div>";
-		map.addOverlay(marker);
-		addClickHandler(content,marker);
+		for(var n = 0; n < rs.length; n++) {
+			console.log("data rs " + data[i][0]);
+			if(rs[n].id == data[i][0]) {
+				if(rs[n].preMarker != null) {
+					map.removeOverlay(rs[n].preMarker);
+					var polyline = new BMap.Polyline([
+						new BMap.Point(rs[n].preMarker.getPosition().lng, rs[n].preMarker.getPosition().lat),
+						new BMap.Point(data[i][1],data[i][2])
+						], {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});
+					map.addOverlay(polyline);
+				}
+				var marker = new BMap.Marker(new BMap.Point(data[i][1],data[i][2]));
+				var content = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "<br/>震动强度：" + data[i][4] + "<br/>时间：" + data[i][5] + "</div>";
+				map.addOverlay(marker);
+				addClickHandler(content,marker);
+				rs[n].preMarker = marker;
+				console.log("pre " + rs[n].preMarker);
+				break;
+			}
+		}
+		
 	}
 }
 
@@ -107,7 +139,40 @@ function addMarkers(data) {
 		var infoWindow = new BMap.InfoWindow(content,opts);  // 创建信息窗口对象 
 		map.openInfoWindow(infoWindow,point); //开启信息窗口
 	}
+	//----------------------------------------------------------
 
+	/*
+	function deleteMarker(x, y) {
+		var allOverlay = map.getOverlays();
+		for (var i = 0; i < allOverlay.length; i++) {
+			if(allOverlay[i].point.lng == x && allOverlay[i].point.lat == y) {
+				map.removeOverlay(allOverlay[i]);
+			}
+		}
+	}//*/
+	
+	function addData(data) {
+		for(var n = 0; n < data.length; n++) {
+			var i;
+			var flag = true;
+			var da = data[n].concat();
+			for(i = 0; i < rs.length; i++) {
+				if(rs[i].id == da[0]) {
+					da.shift();
+					rs[i].add(da);
+					flag = false;
+					break;
+				}
+			}
+			if(flag) {
+				var d = new lower(da[0]);
+				da.shift();
+				d.add(da);
+				rs = rs.concat(d);
+			}
+			console.log(rs);
+		}
+	}
 
 
 // 定义一个控件类,即function

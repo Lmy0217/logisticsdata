@@ -3,7 +3,6 @@ package logistics.data.test;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -85,7 +84,8 @@ public class DataSocket {
 		}
 		
 		private void initLower() {
-			lower = Integer.parseInt(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
+			//lower = Integer.parseInt(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
+			lower = (int)(getId() % Integer.MAX_VALUE);
 		}
 		
 		private void initXY() {
@@ -122,7 +122,7 @@ public class DataSocket {
 	
 	public static void main(String[] args) {
 		try {
-			new DataSocket(1, InetAddress.getByName("127.0.0.1"), 60000);
+			new DataSocket(3, InetAddress.getByName("182.254.210.110"), 60000);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
