@@ -1,17 +1,25 @@
 package logistics.data.test;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.Date;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import logistics.data.bean.Data;
+import logistics.data.util.ByteUtil;
 
 public class DataSocket {
 
 	private int numberOfClients;
 	private InetAddress address;
 	private int port;
+	
+	public static boolean test;
 
 	public DataSocket(InetAddress address, int port) {
 		this(1, address, port);
@@ -29,15 +37,10 @@ public class DataSocket {
 
 	public boolean addClient(int number) {
 		
-		try {
-			for(int i = 0; i < number; i++) {
-				Client client = new Client(new Socket(address, port));
-				client.start();
-				numberOfClients++;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+		for (int i = 0; i < number; i++) {
+			Client client = new Client();
+			client.start();
+			numberOfClients++;
 		}
 		
 		return true;
@@ -50,79 +53,206 @@ public class DataSocket {
 	public class Client extends Thread {
 
 		private Socket socket;
-		private int lower;
-		private double X;
-		private double Y;
-		private int directX;
-		private int directY;
+		private Data data;
+		private byte[] byteArray;
+		private List<Byte> fragList;
+		private int index;
+		
+		private int arrayLength = 1024;
+		private int packLength = 55;
+		
+		private double defaultX = 116.00;
+		private double defaultY = 28.60;
+		private int directX = Math.random() > 0.5 ? 1 : -1;
+		private int directY = Math.random() > 0.5 ? 1 : -1;
+		private double changeX = 0.0001;
+		private double changeY = 0.0001;
+		
 		private boolean runFlag = true;
 
-		public Client(Socket socket) {
-			this.socket = socket;
-			initLower();
-			initXY();
+		public Client() {
+			data = new Data();
+			byteArray = new byte[arrayLength];
+			fragList = new ArrayList<Byte>();
+			index = 0;
+			initData();
 		}
 
 		public void run() {
 			try {
-				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(
-						socket.getOutputStream()));
-				
 				while(runFlag) {
 					// TODO socket write
-					out.write("" + lower + "\n" + getXY() + getTK());
-					out.flush();
+					setData();
+					
+					if(test)
+						System.out.println(data);
+					
+					if(TransportCheck.flag)
+						TransportCheck.sendCheck(data.clone());
+					
+					client();
 					sleep(1000);
+					
+					System.out.println("index=" + index);
+					
+					if (index == arrayLength) {
+						socket = new Socket(address, port);
+						OutputStream out = socket.getOutputStream();
+						out.write(byteArray);
+						
+						if(test) {
+							ByteUtil.printHexString(byteArray);
+							System.out.println();
+						}
+						
+						index = 0;
+						out.flush();
+						//sleep(10000);
+						out.close();
+						socket.close();
+					}
 				}
-				
-				out.close();
-				socket.close();
 				numberOfClients--;
+				
 			} catch (IOException | InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		private void initLower() {
+		private void initData() {
 			//lower = Integer.parseInt(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
-			lower = (int)(getId() % Integer.MAX_VALUE);
+			data.setLower("" + getId());
+			
+			data.setX("" + (defaultX + (Math.random() - 0.5) * 1));
+			data.setY("" + (defaultY + (Math.random() - 0.5) * 1));
 		}
 		
-		private void initXY() {
+		private void setData() {
 			
-			double defaultX = 116.00;
-			double defaultY = 28.60;
+			data.setLower("FFFFFFFFFFFFFFFFFFFF");
 			
-			X = defaultX + (Math.random() - 0.5) * 1;
-			Y = defaultY + (Math.random() - 0.5) * 1;
+			data.setX("" + (Double.parseDouble(data.getX()) + Math.random() * changeX * directX));
+			data.setX("" + ((double)(int)(Double.parseDouble(data.getX()) * 1000000) / 1000000));
+			data.setY("" + (Double.parseDouble(data.getY()) + Math.random() * changeY * directY));
+			data.setY("" + ((double)(int)(Double.parseDouble(data.getY()) * 1000000) / 1000000));
 			
-			directX = Math.random() > 0.5 ? 1 : -1;
-			directY = Math.random() > 0.5 ? 1 : -1;
+			data.setT((int)(Math.random() * 200) - 100);
+			
+			data.setKx(Math.random() * 25.6);
+			data.setKx((double)(int)(data.getKx() * 10) / 10);
+			data.setKy(Math.random() * 25.6);
+			data.setKy((double)(int)(data.getKy() * 10) / 10);
+			data.setKz(Math.random() * 25.6);
+			data.setKz((double)(int)(data.getKz() * 10) / 10);
+			
+			data.setPower((int)(Math.random() * 100));
+			
+			data.setAlarm((int)(Math.random() * 4) % 4);
+			
+			data.setTime(MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}",
+					new Object[] { new Date(System.currentTimeMillis()) }));
 		}
 		
-		private String getXY() {
+		private void client() {
 			
-			double changeX = 0.0001;
-			double changeY = 0.0001;
+			for (; fragList.size() != 0; index++) {
+				byteArray[index] = fragList.get(0);
+				fragList.remove(0);
+			}
 			
-			X += Math.random() * changeX * directX;
-			Y += Math.random() * changeY * directY;
+			escape(translate());
 			
-			return "" + X + "\n" + Y + "\n";
+			if(index + fragList.size() <= arrayLength) {
+				for(; fragList.size() != 0; index++) {
+					byteArray[index] = fragList.get(0);
+					fragList.remove(0);
+				}
+			} else {
+				int empty = arrayLength - index;
+				for(int i = 0; i < empty; i++, index++) {
+					byteArray[index] = fragList.get(0);
+					fragList.remove(0);
+				}
+			}
 		}
 		
-		private String getTK() {
+		public byte[] translate() {
 			
-			int T = (int)(Math.random() * 40);
-			int K = (int)(Math.random() * 10);
+			byte[] fragArray = new byte[packLength];
+			byte[] temp;
 			
-			return "" + T + "\n" + K + "\n";
+			fragArray[0] = (byte) 0x7E;
+			fragArray[1] = (byte) 0x03;
+			
+			//
+			for(int i = 2; i < 30; i++) {
+				fragArray[i] = (byte)0xFF;
+			}
+			
+			fragArray[30] = (byte) 0x00;//
+			fragArray[31] = (byte) 0x01;//
+			fragArray[32] = (byte) 0x01;
+			
+			fragArray[33] = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr((int)(data.getT() + 100), 2)))[0];
+			
+			fragArray[34] = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr((int)(data.getKx() * 10), 2)))[0];
+			fragArray[35] = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr((int)(data.getKy() * 10), 2)))[0];
+			fragArray[36] = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr((int)(data.getKz() * 10), 2)))[0];
+			
+			temp = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr((int)(Double.parseDouble(data.getX()) * 1000000), 8)));
+			fragArray[37] = temp[0];
+			fragArray[38] = temp[1];
+			fragArray[39] = temp[2];
+			fragArray[40] = temp[3];
+			temp = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr((int)(Double.parseDouble(data.getY()) * 1000000), 8)));
+			fragArray[41] = temp[0];
+			fragArray[42] = temp[1];
+			fragArray[43] = temp[2];
+			fragArray[44] = temp[3];
+			
+			fragArray[45] = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr(data.getPower(), 2)))[0];
+			
+			fragArray[46] = (ByteUtil.hexStr2Bytes(ByteUtil.int2HexStr(data.getAlarm(), 2)))[0];
+			
+			fragArray[47] = (ByteUtil.hexStr2Bytes(data.getTime().substring(2, 4)))[0];
+			fragArray[48] = (ByteUtil.hexStr2Bytes(data.getTime().substring(5, 7)))[0];
+			fragArray[49] = (ByteUtil.hexStr2Bytes(data.getTime().substring(8, 10)))[0];
+			fragArray[50] = (ByteUtil.hexStr2Bytes(data.getTime().substring(11, 13)))[0];
+			fragArray[51] = (ByteUtil.hexStr2Bytes(data.getTime().substring(14, 16)))[0];
+			fragArray[52] = (ByteUtil.hexStr2Bytes(data.getTime().substring(17, 19)))[0];
+			
+			byte check = fragArray[1];
+			for(int i = 2; i < 53; i++) {
+				check ^= fragArray[i];
+			}
+			fragArray[53] = check;
+			
+			fragArray[54] = (byte) 0x7E;
+			
+			return fragArray;
+		}
+		
+		public void escape(byte[] byteArray) {
+			fragList.add((byte) 0x7E);
+			for (int i = 1; i < packLength - 1; i++) {
+				if (byteArray[i] == 0x7E) {
+					fragList.add((byte) 0x7D);
+					fragList.add((byte) 0x01);
+				} else if (byteArray[i] == 0x7D) {
+					fragList.add((byte) 0x7D);
+					fragList.add((byte) 0x02);
+				} else {
+					fragList.add(byteArray[i]);
+				}
+			}
+			fragList.add((byte) 0x7E);
 		}
 	}
 	
 	public static void main(String[] args) {
+		test = true;
 		try {
-			new DataSocket(3, InetAddress.getByName("182.254.210.110"), 60000);
+			new DataSocket(1, InetAddress.getByName("127.0.0.1"), 60000);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}

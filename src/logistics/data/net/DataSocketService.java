@@ -1,18 +1,20 @@
 package logistics.data.net;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
+import logistics.data.test.TransportCheck;
+import logistics.data.util.ByteUtil;
 import logistics.data.util.ServiceFactory;
 
 public class DataSocketService {
 
 	private SocketListener socketListener;
-	private int length = 5;
-	private boolean test = false;
+	public static boolean test = false;
 	private boolean testFlag = false;
 
 	public DataSocketService(int port) {
@@ -72,36 +74,117 @@ public class DataSocketService {
 			try {
 				if (test)
 					System.out.println("run start...");
+				
+				InputStream in = socket.getInputStream();
 
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						socket.getInputStream()));
+				byte[] b = new byte[1];
+				List<Byte> byteList = new ArrayList<Byte>();
+				List<Byte> fragList = new ArrayList<Byte>();
+				int headCount = 0;
+				boolean dataFlag = false;
+				boolean tcpStart = true;
+				boolean tcpDataStart = false;
+				boolean startFlag = true;
+				boolean fragFlag = false;
+				String id = null;
+				
+				while (in.read(b) != -1) {
+					
+					if(b[0] == 0x7E) {
+						headCount++;
+						if(headCount == 2 && dataFlag == true) {
+							
+							if (!tcpStart) {
+								
+								if(byteList.size() != 0) {
+									DataTranslate dataTranslate = new DataTranslate(byteList);
+									id = dataTranslate.getId();
+									if(id != null) {
+										if(test)
+											System.out.println(dataTranslate.toData());
+										
+										if(TransportCheck.flag)
+											TransportCheck.receiveCheck(dataTranslate.toData());
+										
+										testFlag = ServiceFactory.getDataService().create(dataTranslate.toData());
+										if(test)
+											System.out.println("Data persistence " + (testFlag ? "success" : "failed") + "!");
+									}
+								}
+								
+								if (tcpDataStart && id != null) {
+									fragFlag = true;
+									tcpDataStart = false;
+								}
+								
+								if (fragFlag) {
+									String value = ServiceFactory.getFragmentService().getValue(id);
+									
+									if (value != null) {
+										ServiceFactory.getFragmentService().delete(id);
+										byte[] bytearray = ByteUtil.hexStr2Bytes(value);
+										for (int i = bytearray.length - 1; i >= 0; i--) {
+											fragList.add(0, bytearray[i]);
+										}
+									}
+									
+									if(fragList.size() != 0) {
+										DataTranslate fragTranslate = new DataTranslate(fragList);
+										id = fragTranslate.getId();
+										if(id != null) {
+											if(test)
+												System.out.println(fragTranslate.toData());
+											
+											if(TransportCheck.flag)
+												TransportCheck.receiveCheck(fragTranslate.toData());
+											
+											testFlag = ServiceFactory.getDataService().create(fragTranslate.toData());
+											if(test)
+												System.out.println("Data persistence " + (testFlag ? "success" : "failed") + "!");
+										}
+									}
+									
+									fragList.clear();
+									fragFlag = false;
+								}
 
-				String line = null;
-				int index = -1;
-				String[] stringArray = new String[length];
-				while ((line = in.readLine()) != null) {
-					// TODO socket run
-					if (test)
-						System.out.println(line);
-					index++;
-					stringArray[index] = line;
-					if (index == length - 1) {
-						index = -1;
-						if (test) {
-							System.out.print("info:");
-							for (String string : stringArray)
-								System.out.print(" " + string);
-							System.out.println();
+								byteList.clear();
+							} else {
+								tcpStart = false;
+							}
+							headCount = 0;
+							dataFlag = false;
+						} else if(dataFlag == false) {
+							tcpStart = false;
+							headCount = 1;
 						}
-						testFlag = ServiceFactory.getDataService().create(
-								Integer.parseInt(stringArray[0]),
-								stringArray[1], stringArray[2],
-								Integer.parseInt(stringArray[3]),
-								Integer.parseInt(stringArray[4]));
-						if (test)
-							System.out.println("insert " + testFlag);
+					} else {
+						if(headCount == 1 || (headCount == 0 && dataFlag == false)) {
+							headCount = 1;
+							dataFlag = true;
+							if(startFlag && !tcpStart) {
+								tcpDataStart = true;
+								startFlag = false;
+							}
+							if(tcpStart) {
+								fragList.add(b[0]);
+							} else {
+								byteList.add(b[0]);
+							}
+						}
 					}
 				}
+				if(dataFlag == true) {
+					StringBuilder value = new StringBuilder();
+					for(Byte e : byteList) {
+						value.append(ByteUtil.byte2HexStr(new byte[]{e}));
+					}
+					testFlag = ServiceFactory.getFragmentService().create(id, value.toString());
+					if(test)
+						System.out.println("Fragment persistence " + (testFlag ? "success" : "failed") + "!");
+				}
+				headCount = 0;
+				dataFlag = false;
 
 				in.close();
 				socket.close();
@@ -115,8 +198,8 @@ public class DataSocketService {
 	}
 
 	public static void main(String[] args) {
-		DataSocketService dataSocketService = new DataSocketService(60000);
-		dataSocketService.test = true;
+		test = true;
+		new DataSocketService(60000);
 	}
 
 }

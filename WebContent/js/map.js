@@ -10,20 +10,22 @@ map.addControl(new BMap.ScaleControl({anchor: BMAP_ANCHOR_TOP_LEFT}));	// 左上
 map.setCurrentCity("北京");          // 设置地图显示的城市 此项是必须设置的
 map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
 
-console.log("start");
+//console.log("start");
 
 var rs = [];
 var startTime = "0000-00-00 00:00:01";
 var endTime = "0000-00-00 00:00:01";
 
-console.log("init end");
+//console.log("init end");
 
 var info = -1;
+var proInfo = -1;
 
 function lower(id) {
 	this.id = id;
 	this.data = [];
 	this.preMarker = null;
+	this.windowInfo = false;
 	this.add = (function(aData) {
 		this.data = (this.data).concat(aData);
 	});
@@ -32,16 +34,16 @@ function lower(id) {
 //----------------------------------------------
 var requestMgr = {
 	request: function (startTime, endTime, successCbk) {
-		console.log("request");
+		//console.log("request");
 		var url = "http://182.254.210.110/get?startTime=" + startTime + "&endTime=" + endTime;
-		console.log(url);
+		//console.log(url);
 		var xhr = new XMLHttpRequest();
 		
 		xhr.onreadystatechange = function() {
-			console.log("onreadystatechange " + xhr.readyState + " " + xhr.status);
+			//console.log("onreadystatechange " + xhr.readyState + " " + xhr.status);
 			if( xhr.readyState == 4  && (xhr.status == 200 || xhr.status == 0) ) {
-				console.log("if");
-				console.log("out" + xhr.responseText + "end");
+				//console.log("if");
+				//console.log("out" + xhr.responseText + "end");
 				var data = JSON.parse(xhr.responseText);
 				//rs = rs.concat(JSON.parse(xhr.responseText));
 				
@@ -54,15 +56,15 @@ var requestMgr = {
 				}
 			}
 		}
-		console.log("open");
+		//console.log("open");
 		xhr.open( "GET", url, true );
-		console.log("send");
+		//console.log("send");
 		xhr.send( null );
 	}
 }
 
 function nowTimeCbk (startTime, endTime) {
-	console.log("nowTimeCbk");
+	//console.log("nowTimeCbk");
 	requestMgr.request(startTime, endTime, function() {
 		setTimeout(function() {
 			startCbk(nowTimeCbk);
@@ -71,7 +73,7 @@ function nowTimeCbk (startTime, endTime) {
 }
 
 function startCbk(cbk) {
-	console.log("startCbk");
+	//console.log("startCbk");
 	var now = new Date();
 	startTime = endTime;
 	
@@ -83,7 +85,7 @@ function startCbk(cbk) {
 	var s = (now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds());
 	
 	endTime = "" + Y + M + D + h + m + s;
-	console.log(endTime);
+	//console.log(endTime);
 	
 	if (cbk) {
 		cbk(startTime, endTime);
@@ -104,7 +106,7 @@ startCbk(nowTimeCbk);
 function addMarkers(data) {
 	for ( var i = 0; i < data.length; i++ ) {
 		for(var n = 0; n < rs.length; n++) {
-			console.log("data rs " + data[i][0]);
+			//console.log("data rs " + data[i][0]);
 			if(rs[n].id == data[i][0]) {
 				if(rs[n].preMarker != null) {
 					map.removeOverlay(rs[n].preMarker);
@@ -113,13 +115,17 @@ function addMarkers(data) {
 						new BMap.Point(data[i][1],data[i][2])
 						], {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});
 					map.addOverlay(polyline);
+					addLineClickHandler("polyline",polyline);
 				}
 				var marker = new BMap.Marker(new BMap.Point(data[i][1],data[i][2]));
 				var content = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "<br/>震动强度：" + data[i][4] + "<br/>时间：" + data[i][5] + "</div>";
 				map.addOverlay(marker);
 				addClickHandler(content,marker);
+				if(rs[n].windowInfo) {
+					
+				}
 				rs[n].preMarker = marker;
-				console.log("pre " + rs[n].preMarker);
+				//console.log("pre " + rs[n].preMarker);
 				break;
 			}
 		}
@@ -136,6 +142,19 @@ function addMarkers(data) {
 	function openInfo(content,e){
 		var p = e.target;
 		var point = new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+		var infoWindow = new BMap.InfoWindow(content,opts);  // 创建信息窗口对象 
+		map.openInfoWindow(infoWindow,point); //开启信息窗口
+	}
+	
+	function addLineClickHandler(content,marker){
+		marker.addEventListener("mouseover",function(e){
+			openLineInfo(content,e)}
+		);
+	}
+	
+	function openLineInfo(content,e){
+		var p = e.point;
+		var point = new BMap.Point(p.lng, p.lat);
 		var infoWindow = new BMap.InfoWindow(content,opts);  // 创建信息窗口对象 
 		map.openInfoWindow(infoWindow,point); //开启信息窗口
 	}
@@ -170,7 +189,7 @@ function addMarkers(data) {
 				d.add(da);
 				rs = rs.concat(d);
 			}
-			console.log(rs);
+			//console.log(rs);
 		}
 	}
 

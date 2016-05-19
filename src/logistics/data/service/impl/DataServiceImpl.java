@@ -16,8 +16,8 @@ public class DataServiceImpl implements DataService {
 	}
 
 	@Override
-	public boolean create(int lower, String x, String y, int t, int k) {
-		return dataDAO.create(lower, x, y, t, k);
+	public boolean create(Data data) {
+		return dataDAO.create(data);
 	}
 
 	@Override

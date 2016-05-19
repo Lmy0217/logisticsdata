@@ -29,17 +29,19 @@ public class GetPost extends HttpServlet {
 		sb.append("[");
 		for (Data data : dataList) {
 			sb.append("[" + data.getLower() + ",\"" + data.getX() + "\",\""
-					+ data.getY() + "\"," + data.getT() + "," + data.getK() + ",\""
+					+ data.getY() + "\"," + data.getT() + "," + data.getKx()
+					+ "," + data.getKy() + "," + data.getKz() + ","
+					+ data.getPower() + "," + data.getAlarm() + ",\""
 					+ data.getTime() + "\"" + "],");
 		}
-		if(dataList.size() > 0)
+		if (dataList.size() > 0)
 			sb.delete(sb.length() - 1, sb.length());
 		sb.append("]");
-		
+
 		resp.setCharacterEncoding("UTF-8");
 		resp.setContentType("application/json; charset=utf-8");
 		resp.setHeader("Access-Control-Allow-Origin", "*");
-		
+
 		resp.getWriter().print(sb);
 		System.out.println(sb);
 	}

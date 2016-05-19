@@ -14,22 +14,27 @@ import logistics.data.util.DBConnection;
 public class DataDAOImpl implements DataDAO {
 
 	@Override
-	public boolean create(int lower, String x, String y, int t, int k) {
+	public boolean create(Data data) {
 		
-		if(x == null || y == null)
+		if(data == null)
 			return false;
 		
 		Connection conn = DBConnection.getConnection();
-		String SQL = "insert into data(lower,x,y,t,k) values(?,?,?,?,?)";
+		String SQL = "insert into data(lower,x,y,t,kx,ky,kz,power,alarm,time) values(?,?,?,?,?,?,?,?,?,?)";
 		PreparedStatement pstmt = null;
 
 		try {
 			pstmt = conn.prepareStatement(SQL);
-			pstmt.setInt(1, lower);
-			pstmt.setString(2, x);
-			pstmt.setString(3, y);
-			pstmt.setInt(4, t);
-			pstmt.setInt(5, k);
+			pstmt.setString(1, data.getLower());
+			pstmt.setString(2, data.getX());
+			pstmt.setString(3, data.getY());
+			pstmt.setDouble(4, data.getT());
+			pstmt.setDouble(5, data.getKx());
+			pstmt.setDouble(6, data.getKy());
+			pstmt.setDouble(7, data.getKz());
+			pstmt.setInt(8, data.getPower());
+			pstmt.setInt(9, data.getAlarm());
+			pstmt.setString(10, data.getTime());
 			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
@@ -70,12 +75,16 @@ public class DataDAOImpl implements DataDAO {
 			while (rs.next()) {
 				data = new Data();
 				data.setId(rs.getInt(1));
-				data.setLower(rs.getInt(2));
+				data.setLower(rs.getString(2));
 				data.setX(rs.getString(3));
 				data.setY(rs.getString(4));
-				data.setT(rs.getInt(5));
-				data.setK(rs.getInt(6));
-				String time = rs.getString(7);
+				data.setT(rs.getDouble(5));
+				data.setKx(rs.getDouble(6));
+				data.setKy(rs.getDouble(7));
+				data.setKz(rs.getDouble(8));
+				data.setPower(rs.getInt(9));
+				data.setAlarm(rs.getInt(10));
+				String time = rs.getString(11);
 				data.setTime(time.substring(0, time.length() - 2));
 				dataList.add(data);
 			}
