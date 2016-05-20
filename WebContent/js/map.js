@@ -50,6 +50,7 @@ var requestMgr = {
 				//rs = rs.concat(data);
 				addData(data);
 				addMarkers(data);
+				addTuple(data);
 				
 				if (successCbk) {
 					successCbk();
@@ -191,6 +192,35 @@ function addMarkers(data) {
 				rs = rs.concat(d);
 			}
 			//console.log(rs);
+		}
+	}
+	
+	function addTuple(data) {
+		console.log("addTuple");
+		var table = document.getElementById("table");
+		
+		for(var n = 0; n < data.length; n++) {
+			var tr = table.insertRow(-1);
+			var td1 = tr.insertCell(-1);
+			td1.innerHTML = data[n][0];
+			var td2 = tr.insertCell(-1);
+			td2.innerHTML = data[n][1];
+			var td3 = tr.insertCell(-1);
+			td3.innerHTML = data[n][2];
+			var td4 = tr.insertCell(-1);
+			td4.innerHTML = data[n][3];
+			var td5 = tr.insertCell(-1);
+			td5.innerHTML = data[n][4];
+			var td6 = tr.insertCell(-1);
+			td6.innerHTML = data[n][5];
+			var td7 = tr.insertCell(-1);
+			td7.innerHTML = data[n][6];
+			var td8 = tr.insertCell(-1);
+			td8.innerHTML = data[n][7];
+			var td9 = tr.insertCell(-1);
+			td9.innerHTML = data[n][8];
+			var td10 = tr.insertCell(-1);
+			td10.innerHTML = data[n][9];
 		}
 	}
 
