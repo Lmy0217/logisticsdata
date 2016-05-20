@@ -28,9 +28,9 @@ public class GetPost extends HttpServlet {
 
 		sb.append("[");
 		for (Data data : dataList) {
-			sb.append("[" + data.getLower() + ",\"" + data.getX() + "\",\""
-					+ data.getY() + "\"," + data.getT() + "," + data.getKx()
-					+ "," + data.getKy() + "," + data.getKz() + ","
+			sb.append("[\"" + data.getLower() + "\",\"" + data.getX() + "\",\""
+					+ data.getY() + "\",\"" + data.getT() + "\",\"" + data.getKx()
+					+ "\",\"" + data.getKy() + "\",\"" + data.getKz() + "\","
 					+ data.getPower() + "," + data.getAlarm() + ",\""
 					+ data.getTime() + "\"" + "],");
 		}

@@ -11,14 +11,20 @@ import logistics.data.bean.Data;
 import logistics.data.dao.DataDAO;
 import logistics.data.util.DBConnection;
 
+/**
+ * 数据持久化类, 实现数据持久化接口
+ * 
+ * @author myluo(lmy0217@126.com)
+ * @version 1605
+ */
 public class DataDAOImpl implements DataDAO {
 
 	@Override
 	public boolean create(Data data) {
-		
-		if(data == null)
+
+		if (data == null)
 			return false;
-		
+
 		Connection conn = DBConnection.getConnection();
 		String SQL = "insert into data(lower,x,y,t,kx,ky,kz,power,alarm,time) values(?,?,?,?,?,?,?,?,?,?)";
 		PreparedStatement pstmt = null;
@@ -52,26 +58,28 @@ public class DataDAOImpl implements DataDAO {
 
 	@Override
 	public List<Data> get(int lower, String startTime, String endTime) {
-		
+
 		List<Data> dataList = new ArrayList<Data>();
 
-		if(lower == -1 && (startTime == null || endTime == null))
+		if (lower == -1 && (startTime == null || endTime == null))
 			return dataList;
-		
+
 		Connection conn = DBConnection.getConnection();
 		StringBuilder SQL = new StringBuilder();
 		SQL.append("select * from data where"
 				+ (lower != -1 ? " lower = " + lower + " and" : "")
-				+ ((startTime != null && endTime != null) ? " time > \'" + startTime + "\' and time <= \'" + endTime + "\' and" : ""));
+				+ ((startTime != null && endTime != null) ? " time > \'"
+						+ startTime + "\' and time <= \'" + endTime + "\' and"
+						: ""));
 		SQL.delete(SQL.length() - 4, SQL.length());
-		
+
 		PreparedStatement pstmt = null;
 		Data data = null;
-		
+
 		try {
 			pstmt = conn.prepareStatement(SQL.toString());
 			ResultSet rs = pstmt.executeQuery();
-			
+
 			while (rs.next()) {
 				data = new Data();
 				data.setId(rs.getInt(1));
@@ -95,7 +103,7 @@ public class DataDAOImpl implements DataDAO {
 			DBConnection.close(pstmt);
 			DBConnection.close(conn);
 		}
-		
+
 		return dataList;
 	}
 

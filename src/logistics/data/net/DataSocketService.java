@@ -106,7 +106,7 @@ public class DataSocketService {
 										if(TransportCheck.flag)
 											TransportCheck.receiveCheck(dataTranslate.toData());
 										
-										testFlag = ServiceFactory.getDataService().create(dataTranslate.toData());
+										testFlag = ServiceFactory.getDataService().save(dataTranslate.toData());
 										if(test)
 											System.out.println("Data persistence " + (testFlag ? "success" : "failed") + "!");
 									}
@@ -138,7 +138,7 @@ public class DataSocketService {
 											if(TransportCheck.flag)
 												TransportCheck.receiveCheck(fragTranslate.toData());
 											
-											testFlag = ServiceFactory.getDataService().create(fragTranslate.toData());
+											testFlag = ServiceFactory.getDataService().save(fragTranslate.toData());
 											if(test)
 												System.out.println("Data persistence " + (testFlag ? "success" : "failed") + "!");
 										}

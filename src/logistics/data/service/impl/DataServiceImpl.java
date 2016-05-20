@@ -16,7 +16,7 @@ public class DataServiceImpl implements DataService {
 	}
 
 	@Override
-	public boolean create(Data data) {
+	public boolean save(Data data) {
 		return dataDAO.create(data);
 	}
 

@@ -35,7 +35,7 @@ function lower(id) {
 var requestMgr = {
 	request: function (startTime, endTime, successCbk) {
 		//console.log("request");
-		var url = "http://182.254.210.110/get?startTime=" + startTime + "&endTime=" + endTime;
+		var url = "http://127.0.0.1:8080/logisticsdata/get?startTime=" + startTime + "&endTime=" + endTime;
 		//console.log(url);
 		var xhr = new XMLHttpRequest();
 		
@@ -98,7 +98,7 @@ startCbk(nowTimeCbk);
 //---------------------------------------------
 	var opts = {
 		width : 250,     // 信息窗口宽度
-		height: 100,     // 信息窗口高度
+		height: 220,     // 信息窗口高度
 		//title : "信息窗口" , // 信息窗口标题
 		enableMessage:true//设置允许信息窗发送短息
 	};
@@ -115,10 +115,11 @@ function addMarkers(data) {
 						new BMap.Point(data[i][1],data[i][2])
 						], {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});
 					map.addOverlay(polyline);
-					addLineClickHandler("polyline",polyline);
+					var lineContent = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "℃<br/>震动强度：<br/>&nbsp;&nbsp;&nbsp;&nbsp;X轴：" + data[i][4] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Y轴：" + data[i][5] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Z轴：" + data[i][6] + "m/s²<br/>剩余电量：" + data[i][7] + "%<br/>报警标志：" + (data[i][8] % 2 == 1 ? "震动报警" : "") + (data[i][8] / 2 >= 1 ? "，温度报警" : "") + "<br/>时间：" + data[i][9] + "</div>";
+					addLineClickHandler(lineContent,polyline);
 				}
 				var marker = new BMap.Marker(new BMap.Point(data[i][1],data[i][2]));
-				var content = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "<br/>震动强度：" + data[i][4] + "<br/>时间：" + data[i][5] + "</div>";
+				var content = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "℃<br/>震动强度：<br/>&nbsp;&nbsp;&nbsp;&nbsp;X轴：" + data[i][4] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Y轴：" + data[i][5] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Z轴：" + data[i][6] + "m/s²<br/>剩余电量：" + data[i][7] + "%<br/>报警标志：" + (data[i][8] % 2 == 1 ? "震动报警" : "") + (data[i][8] / 2 >= 1 ? "，温度报警" : "") + "<br/>时间：" + data[i][9] + "</div>";
 				map.addOverlay(marker);
 				addClickHandler(content,marker);
 				if(rs[n].windowInfo) {
@@ -193,7 +194,7 @@ function addMarkers(data) {
 		}
 	}
 
-
+/*
 // 定义一个控件类,即function
 	function ZoomControl(){
 	  // 默认停靠位置和偏移量
@@ -229,6 +230,7 @@ function addMarkers(data) {
 	var myZoomCtrl = new ZoomControl();
 	// 添加到地图当中
 	map.addControl(myZoomCtrl);
+	*/
 
 
 
