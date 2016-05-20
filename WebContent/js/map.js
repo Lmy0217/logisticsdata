@@ -35,7 +35,7 @@ function lower(id) {
 var requestMgr = {
 	request: function (startTime, endTime, successCbk) {
 		//console.log("request");
-		var url = "http://127.0.0.1:8080/logisticsdata/get?startTime=" + startTime + "&endTime=" + endTime;
+		var url = "http://182.254.210.110/get?startTime=" + startTime + "&endTime=" + endTime;
 		//console.log(url);
 		var xhr = new XMLHttpRequest();
 		
