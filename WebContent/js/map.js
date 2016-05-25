@@ -116,11 +116,27 @@ function addMarkers(data) {
 						new BMap.Point(data[i][1],data[i][2])
 						], {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});
 					map.addOverlay(polyline);
-					var lineContent = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "℃<br/>震动强度：<br/>&nbsp;&nbsp;&nbsp;&nbsp;X轴：" + data[i][4] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Y轴：" + data[i][5] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Z轴：" + data[i][6] + "m/s²<br/>剩余电量：" + data[i][7] + "%<br/>报警标志：" + (data[i][8] % 2 == 1 ? "震动报警" : "") + (data[i][8] / 2 >= 1 ? "，温度报警" : "") + "<br/>时间：" + data[i][9] + "</div>";
+					var lineContent = "<b class='iw_poi_title' title='" + data[i][0] + "'>" 
+								+ data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] 
+								+ "℃<br/>震动强度：<br/>&nbsp;&nbsp;&nbsp;&nbsp;X轴：" + data[i][4] 
+								+ "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Y轴：" + data[i][5] 
+								+ "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Z轴：" + data[i][6] 
+								+ "m/s²<br/>剩余电量：" + data[i][7] + "%<br/>报警标志：" 
+								+ (data[i][8] == 0 ? "无报警" : "") + (data[i][8] == 1 ? "震动报警" : "") 
+								+ (data[i][8] == 2 ? "温度报警" : "") + (data[i][8] == 3 ? "温度报警、震动报警" : "") 
+								+ "<br/>时间：" + data[i][9] + "</div>";
 					addLineClickHandler(lineContent,polyline);
 				}
 				var marker = new BMap.Marker(new BMap.Point(data[i][1],data[i][2]));
-				var content = "<b class='iw_poi_title' title='" + data[i][0] + "'>" + data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] + "℃<br/>震动强度：<br/>&nbsp;&nbsp;&nbsp;&nbsp;X轴：" + data[i][4] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Y轴：" + data[i][5] + "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Z轴：" + data[i][6] + "m/s²<br/>剩余电量：" + data[i][7] + "%<br/>报警标志：" + (data[i][8] % 2 == 1 ? "震动报警" : "") + (data[i][8] / 2 >= 1 ? "，温度报警" : "") + "<br/>时间：" + data[i][9] + "</div>";
+				var content = "<b class='iw_poi_title' title='" + data[i][0] + "'>" 
+					+ data[i][0] + "</b><div class='iw_poi_content'>" + "温度：" + data[i][3] 
+					+ "℃<br/>震动强度：<br/>&nbsp;&nbsp;&nbsp;&nbsp;X轴：" + data[i][4] 
+					+ "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Y轴：" + data[i][5] 
+					+ "m/s²<br/>&nbsp;&nbsp;&nbsp;&nbsp;Z轴：" + data[i][6] 
+					+ "m/s²<br/>剩余电量：" + data[i][7] + "%<br/>报警标志：" 
+					+ (data[i][8] == 0 ? "无报警" : "") + (data[i][8] == 1 ? "震动报警" : "") 
+					+ (data[i][8] == 2 ? "温度报警" : "") + (data[i][8] == 3 ? "温度报警、震动报警" : "") 
+					+ "<br/>时间：" + data[i][9] + "</div>";
 				map.addOverlay(marker);
 				addClickHandler(content,marker);
 				if(rs[n].windowInfo) {

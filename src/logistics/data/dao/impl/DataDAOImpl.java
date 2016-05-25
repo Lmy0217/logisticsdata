@@ -72,6 +72,7 @@ public class DataDAOImpl implements DataDAO {
 						+ startTime + "\' and time <= \'" + endTime + "\' and"
 						: ""));
 		SQL.delete(SQL.length() - 4, SQL.length());
+		SQL.append(" order by time");
 
 		PreparedStatement pstmt = null;
 		Data data = null;
